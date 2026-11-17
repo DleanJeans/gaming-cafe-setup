@@ -62,7 +62,7 @@ if errorlevel 1 (echo   Graphics patch failed, settings left unchanged.) else (e
 
 rem G HUB DPI for the active profile's mouse (cafe uses G102/G203 LIGHTSYNC).
 set "DPI_LEVELS=1200,1600,2000,2400,3200"
-set "DPI_DEFAULT=1200"
+set "DPI_DEFAULT=1600"
 set "SQLITE_ZIP=https://www.sqlite.org/2026/sqlite-tools-win-x64-3540100.zip"
 set "LGHUB_DB=%LocalAppData%\LGHUB\settings.db"
 set "SQLITE=%TEMP%\sqlite3.exe"
