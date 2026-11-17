@@ -48,6 +48,18 @@ set "PERSONALIZE=HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personali
 reg add "%PERSONALIZE%" /v AppsUseLightTheme /t REG_DWORD /d 0 /f >nul
 reg add "%PERSONALIZE%" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f >nul
 
+rem Marvel Rivals graphics to Low and max FPS 240 (FrameRateLimit): the exact [ScalabilityGroups] values the game writes for its Low preset.
+rem Missing keys are added (the game omits them until a preset is applied); other settings are untouched.
+rem Skipped if the file is missing, so run the game once first. Close the game before running.
+set "RIVALS_INI=%LocalAppData%\Marvel\Saved\Config\Windows\GameUserSettings.ini"
+if not exist "%RIVALS_INI%" goto :skip_graphics
+echo Setting Marvel Rivals graphics to Low...
+rem Keep the first backup; later runs would overwrite it with already-patched settings.
+if not exist "%RIVALS_INI%.bak" copy "%RIVALS_INI%" "%RIVALS_INI%.bak" >nul
+powershell -NoProfile -Command "$p=$env:RIVALS_INI;$L=New-Object Collections.Generic.List[string];$L.AddRange([string[]](Get-Content -LiteralPath $p));$h=$L.IndexOf('[ScalabilityGroups]');if($h -lt 0){$L.Add('');$L.Add('[ScalabilityGroups]');$h=$L.Count-1};$m=$L.IndexOf('[/Script/Marvel.MarvelGameUserSettings]');if($m -lt 0){$L.Add('');$L.Add('[/Script/Marvel.MarvelGameUserSettings]');$m=$L.Count-1};$v=[ordered]@{ViewDistanceQuality=1;ShadowQuality=0;PostProcessQuality=0;TextureQuality=0;EffectsQuality=0;FoliageQuality=0;ShadingQuality=0;ReflectionQuality=1;GlobalIlluminationQuality=1};foreach($k in $v.Keys){$s='sg.'+$k+'=';$l=$s+$v[$k];$i=-1;for($j=0;$j -lt $L.Count;$j++){if($L[$j].StartsWith($s)){$i=$j;break}};if($i -ge 0){$L[$i]=$l}else{$L.Insert($h+1,$l)}};$f=-1;for($j=0;$j -lt $L.Count;$j++){if($L[$j].StartsWith('FrameRateLimit=')){$f=$j;break}};if($f -ge 0){$L[$f]='FrameRateLimit=240.000000'}else{$m=$L.IndexOf('[/Script/Marvel.MarvelGameUserSettings]');$L.Insert($m+1,'FrameRateLimit=240.000000')};[IO.File]::WriteAllLines($p,$L)"
+if errorlevel 1 (echo   Graphics patch failed, settings left unchanged.) else (echo   Graphics set to Low.)
+:skip_graphics
+
 rem G HUB DPI for the active profile's mouse (cafe uses G102/G203 LIGHTSYNC).
 set "DPI_LEVELS=1200,1600,2000,2400,3200"
 set "DPI_DEFAULT=1200"
