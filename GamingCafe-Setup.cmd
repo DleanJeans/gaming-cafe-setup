@@ -85,6 +85,19 @@ timeout /t 3 /nobreak >nul
 start "" "%ProgramFiles%\LGHUB\lghub.exe"
 :skip_dpi
 
+rem Steam overlay shortcut (default Shift+Tab clashes with in-game keys). Edits every account's localconfig.vdf under the Steam folder.
+rem Steam must be closed to keep the edit, so this closes it (the Steam launch below reopens it). Keeps a .bak next to each file.
+set "OVERLAY_MOD=Shift"
+set "OVERLAY_KEY=KEY_F2"
+set "STEAM_DIR="
+for /f "tokens=2,*" %%a in ('reg query "HKCU\Software\Valve\Steam" /v SteamPath 2^>nul') do set "STEAM_DIR=%%b"
+if not defined STEAM_DIR goto :skip_overlay
+set "STEAM_DIR=%STEAM_DIR:/=\%"
+echo Setting Steam overlay shortcut to %OVERLAY_MOD%+%OVERLAY_KEY%...
+powershell -NoProfile -Command "$d=$env:STEAM_DIR;$q=[char]34;$t=[char]9;$l=$t+$t+$q+'InGameOverlayShortcutKey'+$q+$t+$t+$q+$env:OVERLAY_MOD+$t+$env:OVERLAY_KEY+$q;$s=Get-Process steam -ErrorAction SilentlyContinue;if($s){& ($d+'\steam.exe') -shutdown;$s|Wait-Process -Timeout 30 -ErrorAction SilentlyContinue;if(Get-Process steam -ErrorAction SilentlyContinue){exit 1}};foreach($f in Get-ChildItem ($d+'\userdata\*\config\localconfig.vdf')){$b=$f.FullName+'.bak';if(-not(Test-Path $b)){Copy-Item $f.FullName $b};$L=New-Object Collections.Generic.List[string];$L.AddRange([string[]][IO.File]::ReadAllLines($f.FullName));$i=-1;for($j=0;$j -lt $L.Count;$j++){if($L[$j] -like '*InGameOverlayShortcutKey*'){$i=$j;break}};if($i -ge 0){$L[$i]=$l}else{$h=$L.IndexOf($t+$q+'system'+$q);if($h -lt 0){exit 1};$L.Insert($h+2,$l)};[IO.File]::WriteAllLines($f.FullName,$L)}"
+if errorlevel 1 (echo   Steam overlay patch failed, settings left unchanged.) else (echo   Steam overlay shortcut set.)
+:skip_overlay
+
 rem Optional: launch Marvel Rivals through Steam (app id 2767030). Asked at run time since the PCs are shared; defaults to No after 10 seconds.
 rem Runs last so the graphics settings above are written before the game starts.
 choice /c YN /t 10 /d N /m "Launch Marvel Rivals through Steam now"
