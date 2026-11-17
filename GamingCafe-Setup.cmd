@@ -104,6 +104,11 @@ choice /c YN /t 10 /d N /m "Launch Marvel Rivals through Steam now"
 if errorlevel 2 goto :skip_launch
 echo Launching Marvel Rivals through Steam...
 start "" "steam://rungameid/2767030"
+rem Click LAUNCH in the game launcher: waits up to 90s for a window titled "Launcher", then clicks the button
+rem at 83% across and 89% down the window (position taken from a screenshot). Fails quietly if it never appears.
+echo Waiting for the launcher, then pressing LAUNCH...
+powershell -NoProfile -Command "$sig='[StructLayout(LayoutKind.Sequential)] public struct RECT{public int L,T,R,B;} [DllImport(\"user32.dll\")] public static extern bool GetWindowRect(IntPtr h,out RECT r); [DllImport(\"user32.dll\")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport(\"user32.dll\")] public static extern bool SetCursorPos(int x,int y); [DllImport(\"user32.dll\")] public static extern void mouse_event(uint f,uint x,uint y,uint d,UIntPtr e);';Add-Type -Name U -Namespace L -UsingNamespace System.Runtime.InteropServices -MemberDefinition $sig;$w=$null;for($n=0;$n -lt 90;$n++){$w=Get-Process|Where-Object{$_.MainWindowTitle -eq 'Launcher'}|Select-Object -First 1;if($w){break};Start-Sleep 1};if(-not $w){exit 1};Start-Sleep 3;$r=New-Object 'L.U+RECT';[void][L.U]::GetWindowRect($w.MainWindowHandle,[ref]$r);[void][L.U]::SetForegroundWindow($w.MainWindowHandle);Start-Sleep -Milliseconds 500;$x=[int]($r.L+0.83*($r.R-$r.L));$y=[int]($r.T+0.894*($r.B-$r.T));[void][L.U]::SetCursorPos($x,$y);[L.U]::mouse_event(2,0,0,0,[UIntPtr]::Zero);Start-Sleep -Milliseconds 100;[L.U]::mouse_event(4,0,0,0,[UIntPtr]::Zero)"
+if errorlevel 1 (echo   Launcher window not found, press LAUNCH yourself.) else (echo   LAUNCH pressed.)
 :skip_launch
 
 echo.
