@@ -85,6 +85,14 @@ timeout /t 3 /nobreak >nul
 start "" "%ProgramFiles%\LGHUB\lghub.exe"
 :skip_dpi
 
+rem Optional: launch Marvel Rivals through Steam (app id 2767030). Asked at run time since the PCs are shared; defaults to No after 10 seconds.
+rem Runs last so the graphics settings above are written before the game starts.
+choice /c YN /t 10 /d N /m "Launch Marvel Rivals through Steam now"
+if errorlevel 2 goto :skip_launch
+echo Launching Marvel Rivals through Steam...
+start "" "steam://rungameid/2767030"
+:skip_launch
+
 echo.
 echo Next steps:
 echo   1. Click "Add to Chrome" on the Dark Reader tab.
