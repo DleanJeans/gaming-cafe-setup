@@ -47,6 +47,9 @@ start "" "%RIVALS_META%"
 :pages_done
 
 echo Starting the official Marvel Rivals Tracker download...
+rem Remove an older copy first so the wait below can only see the new download.
+set "TRACKER_INSTALLER=%USERPROFILE%\Downloads\Marvel Rivals Tracker - Installer.exe"
+if exist "%TRACKER_INSTALLER%" del "%TRACKER_INSTALLER%"
 start "" "%MARVEL_RIVALS_TRACKER%"
 
 rem Windows pointer speed: 1-20 on the Settings slider (default 10).
@@ -124,6 +127,11 @@ powershell -NoProfile -Command "$sig='[StructLayout(LayoutKind.Sequential)] publ
 if errorlevel 1 (echo   Launcher window not found, press LAUNCH yourself.) else (echo   LAUNCH pressed.)
 :skip_launch
 
+rem Open the Tracker installer once the download has finished (about 3 MB; waits up to 90s for the file to stop growing).
+echo Waiting for the Tracker installer download...
+powershell -NoProfile -Command "$f=$env:TRACKER_INSTALLER;$ok=$false;for($i=0;$i -lt 90;$i++){if(Test-Path -LiteralPath $f){$a=(Get-Item -LiteralPath $f).Length;Start-Sleep 1;$b=(Get-Item -LiteralPath $f).Length;if($a -gt 0 -and $a -eq $b){$ok=$true;break}}else{Start-Sleep 1}};if(-not $ok){exit 1};Start-Process -FilePath $f"
+if errorlevel 1 (echo   Tracker installer not found in Downloads, run it yourself once it has downloaded.) else (echo   Tracker installer opened.)
+
 echo.
 echo Next steps:
 echo   1. Click "Add to Chrome" on the Dark Reader tab.
@@ -131,7 +139,7 @@ echo   2. Click "Add to Chrome" on the uBlock Origin Lite tab.
 echo   3. Check your Marvel Rivals stats on the RivalsData tab.
 echo   4. Check the maps on the Peni tab.
 echo   5. Check the RivalsData stats and RivalsMeta characters windows, side by side.
-echo   6. Run the Tracker installer after it finishes downloading, if the cafe allows it.
+echo   6. Click through the Tracker installer window that opened (if the cafe allows it).
 echo.
 echo The browser extensions install only after Chrome asks for your confirmation.
 pause
