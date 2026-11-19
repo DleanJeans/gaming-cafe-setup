@@ -12,8 +12,10 @@ set "MARVEL_RIVALS_TRACKER=https://download.overwolf.com/install/Download?Extens
 rem Marvel Rivals player stats.
 set "RIVALS_DATA=https://rivalsdata.com/player/520435205"
 
-rem Tracker.gg live match.
-set "TRACKER_LIVE=https://tracker.gg/marvel-rivals/matches/live/ign/DleanJeans"
+rem Opened side by side in two Chrome windows (Chrome has no command-line option for its split view).
+rem %% in the URL escapes the percent sign for batch.
+set "RIVALS_STATS=https://rivalsdata.com/stats"
+set "RIVALS_META=https://rivalsmeta.com/characters?rank=6%%2B"
 
 rem Peni maps.
 set "PENI_MAPS=https://pgc-talha.github.io/Peni/#/maps"
@@ -23,15 +25,26 @@ if not exist "%CHROME%" set "CHROME=%ProgramFiles(x86)%\Google\Chrome\Applicatio
 if not exist "%CHROME%" set "CHROME=%LocalAppData%\Google\Chrome\Application\chrome.exe"
 
 echo Opening the official setup pages...
-if exist "%CHROME%" (
-    start "" "%CHROME%" "%UBLOCK_ORIGIN_LITE%" "%DARK_READER%" "%RIVALS_DATA%" "%TRACKER_LIVE%" "%PENI_MAPS%"
-) else (
-    start "" "%UBLOCK_ORIGIN_LITE%"
-    start "" "%DARK_READER%"
-    start "" "%RIVALS_DATA%"
-    start "" "%TRACKER_LIVE%"
-    start "" "%PENI_MAPS%"
-)
+if not exist "%CHROME%" goto :no_chrome
+start "" "%CHROME%" "%UBLOCK_ORIGIN_LITE%" "%DARK_READER%" "%RIVALS_DATA%" "%PENI_MAPS%"
+rem Two windows side by side, each half of the screen's usable area (falls back to 1920x1040).
+rem Labels instead of one big (...) block: variables set inside a block are not visible to later lines in it.
+set "SCREEN_W=1920"
+set "SCREEN_H=1040"
+for /f "tokens=1,2" %%a in ('powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $b=[Windows.Forms.Screen]::PrimaryScreen.WorkingArea; '{0} {1}' -f $b.Width,$b.Height" 2^>nul') do set "SCREEN_W=%%a" & set "SCREEN_H=%%b"
+set /a HALF_W=SCREEN_W/2
+timeout /t 2 /nobreak >nul
+start "" "%CHROME%" --new-window --window-position=0,0 --window-size=%HALF_W%,%SCREEN_H% "%RIVALS_STATS%"
+start "" "%CHROME%" --new-window --window-position=%HALF_W%,0 --window-size=%HALF_W%,%SCREEN_H% "%RIVALS_META%"
+goto :pages_done
+:no_chrome
+start "" "%UBLOCK_ORIGIN_LITE%"
+start "" "%DARK_READER%"
+start "" "%RIVALS_DATA%"
+start "" "%PENI_MAPS%"
+start "" "%RIVALS_STATS%"
+start "" "%RIVALS_META%"
+:pages_done
 
 echo Starting the official Marvel Rivals Tracker download...
 start "" "%MARVEL_RIVALS_TRACKER%"
@@ -116,8 +129,8 @@ echo Next steps:
 echo   1. Click "Add to Chrome" on the Dark Reader tab.
 echo   2. Click "Add to Chrome" on the uBlock Origin Lite tab.
 echo   3. Check your Marvel Rivals stats on the RivalsData tab.
-echo   4. Check your live match on the Tracker.gg tab.
-echo   5. Check the maps on the Peni tab.
+echo   4. Check the maps on the Peni tab.
+echo   5. Check the RivalsData stats and RivalsMeta characters windows, side by side.
 echo   6. Run the Tracker installer after it finishes downloading, if the cafe allows it.
 echo.
 echo The browser extensions install only after Chrome asks for your confirmation.
