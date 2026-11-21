@@ -76,7 +76,12 @@ echo Setting Marvel Rivals graphics to Low...
 rem Keep the first backup; later runs would overwrite it with already-patched settings.
 if not exist "%RIVALS_INI%.bak" copy "%RIVALS_INI%" "%RIVALS_INI%.bak" >nul
 powershell -NoProfile -Command "$p=$env:RIVALS_INI;$lines=New-Object Collections.Generic.List[string];$lines.AddRange([string[]](Get-Content -LiteralPath $p));$h=$lines.IndexOf('[ScalabilityGroups]');if($h -lt 0){$lines.Add('');$lines.Add('[ScalabilityGroups]');$h=$lines.Count-1};$m=$lines.IndexOf('[/Script/Marvel.MarvelGameUserSettings]');if($m -lt 0){$lines.Add('');$lines.Add('[/Script/Marvel.MarvelGameUserSettings]');$m=$lines.Count-1};$v=[ordered]@{ViewDistanceQuality=1;ShadowQuality=0;PostProcessQuality=0;TextureQuality=0;EffectsQuality=0;FoliageQuality=0;ShadingQuality=0;ReflectionQuality=1;GlobalIlluminationQuality=1};foreach($k in $v.Keys){$s='sg.'+$k+'=';$newline=$s+$v[$k];$i=-1;for($j=0;$j -lt $lines.Count;$j++){if($lines[$j].StartsWith($s)){$i=$j;break}};if($i -ge 0){$lines[$i]=$newline}else{$lines.Insert($h+1,$newline)}};$f=-1;for($j=0;$j -lt $lines.Count;$j++){if($lines[$j].StartsWith('FrameRateLimit=')){$f=$j;break}};if($f -ge 0){$lines[$f]='FrameRateLimit=240.000000'}else{$m=$lines.IndexOf('[/Script/Marvel.MarvelGameUserSettings]');$lines.Insert($m+1,'FrameRateLimit=240.000000')};[IO.File]::WriteAllLines($p,$lines)"
-if errorlevel 1 (echo   Graphics patch failed, settings left unchanged.) else (echo   Graphics set to Low.)
+if errorlevel 1 echo   PowerShell reported an error while patching.
+rem Show what is actually in the file now, and only report success if the values are there.
+echo   File: %RIVALS_INI%
+findstr /b /c:"sg." /c:"FrameRateLimit=" "%RIVALS_INI%"
+findstr /b /c:"FrameRateLimit=240" "%RIVALS_INI%" >nul
+if errorlevel 1 (echo   NOT applied: FrameRateLimit is not 240 in the file.) else (echo   Applied: Low preset and 240 FPS are in the file. The game must be closed or it may overwrite them.)
 :skip_graphics
 
 rem G HUB DPI for the active profile's mouse (cafe uses G102/G203 LIGHTSYNC).
