@@ -2,7 +2,7 @@
 
 One-click setup for a gaming cafe PC. Run `GamingCafe-Setup.cmd` to:
 
-- open Dark Reader, uBlock Origin Lite, RivalsData and Peni maps in Chrome, RivalsData stats and RivalsMeta characters (rank 6+) in Chrome
+- open Dark Reader, uBlock Origin Lite, RivalsData (player and stats), RivalsMeta characters (rank 6+) and Peni maps in one Chrome window
 - start the Marvel Rivals Tracker download and open the installer from Downloads once it finishes
 - set the Windows pointer speed and dark mode
 - set Marvel Rivals graphics to Low (patches `%LocalAppData%\Marvel\Saved\Config\Windows\GameUserSettings.ini`; applies the Low preset values and a 240 FPS limit; keeps a `.bak`; skipped if the file is missing)
