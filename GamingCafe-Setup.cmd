@@ -40,14 +40,19 @@ start "" "%RIVALS_META%"
 start "" "%PENI_MAPS%"
 :pages_done
 
+rem Installers the script opens once downloaded. Older copies are removed first so the wait below only sees new downloads.
+set "TRACKER_INSTALLER=%USERPROFILE%\Downloads\Marvel Rivals Tracker - Installer.exe"
+set "GITHUB_INSTALLER=%USERPROFILE%\Downloads\GitHubDesktopSetup-x64.exe"
+set "CLAUDE_INSTALLER=%USERPROFILE%\Downloads\Claude Setup.exe"
+if exist "%TRACKER_INSTALLER%" del "%TRACKER_INSTALLER%"
+if exist "%GITHUB_INSTALLER%" del "%GITHUB_INSTALLER%"
+if exist "%CLAUDE_INSTALLER%" del "%CLAUDE_INSTALLER%"
+
 echo Starting the GitHub Desktop download and opening the Claude Desktop download page...
 start "" "%GITHUB_DESKTOP%"
 start "" "%CLAUDE_DESKTOP%"
 
 echo Starting the official Marvel Rivals Tracker download...
-rem Remove an older copy first so the wait below can only see the new download.
-set "TRACKER_INSTALLER=%USERPROFILE%\Downloads\Marvel Rivals Tracker - Installer.exe"
-if exist "%TRACKER_INSTALLER%" del "%TRACKER_INSTALLER%"
 start "" "%MARVEL_RIVALS_TRACKER%"
 
 rem Windows pointer speed: 1-20 on the Settings slider (default 10).
@@ -125,10 +130,11 @@ powershell -NoProfile -Command "$sig='[StructLayout(LayoutKind.Sequential)] publ
 if errorlevel 1 (echo   Launcher window not found, press LAUNCH yourself.) else (echo   LAUNCH pressed.)
 :skip_launch
 
-rem Open the Tracker installer once the download has finished (about 3 MB; waits up to 90s for the file to stop growing).
-echo Waiting for the Tracker installer download...
-powershell -NoProfile -Command "$f=$env:TRACKER_INSTALLER;$ok=$false;for($i=0;$i -lt 90;$i++){if(Test-Path -LiteralPath $f){$a=(Get-Item -LiteralPath $f).Length;Start-Sleep 1;$b=(Get-Item -LiteralPath $f).Length;if($a -gt 0 -and $a -eq $b){$ok=$true;break}}else{Start-Sleep 1}};if(-not $ok){exit 1};Start-Process -FilePath $f"
-if errorlevel 1 (echo   Tracker installer not found in Downloads, run it yourself once it has downloaded.) else (echo   Tracker installer opened.)
+rem Open each installer once its download has finished (waits up to 120s in total for the files to stop growing).
+rem The Claude installer only downloads after you click Download for Windows on the Claude page.
+echo Waiting for the installer downloads (Tracker, GitHub Desktop, Claude Desktop)...
+powershell -NoProfile -Command "$fs=@($env:TRACKER_INSTALLER,$env:GITHUB_INSTALLER,$env:CLAUDE_INSTALLER);$p=@{};$sz=@{};for($i=0;$i -lt 120 -and $p.Count -lt $fs.Count;$i++){foreach($f in $fs){if($p[$f]){continue};if(Test-Path -LiteralPath $f){$n=(Get-Item -LiteralPath $f).Length;if($n -gt 0 -and $sz[$f] -eq $n){Start-Process -FilePath $f;$p[$f]=1}else{$sz[$f]=$n}}};Start-Sleep 1};if($p.Count -lt $fs.Count){exit 1}"
+if errorlevel 1 (echo   Some installers were not found in Downloads, run those yourself once downloaded.) else (echo   Installers opened.)
 
 echo.
 echo Next steps:
@@ -137,8 +143,8 @@ echo   2. Click "Add to Chrome" on the uBlock Origin Lite tab.
 echo   3. Check your Marvel Rivals stats on the RivalsData tab.
 echo   4. Check the maps on the Peni tab.
 echo   5. Check the RivalsData stats and RivalsMeta characters tabs.
-echo   6. Run the GitHub Desktop installer from Downloads, and click Download for Windows on the Claude page.
-echo   7. Click through the Tracker installer window that opened (if the cafe allows it).
+echo   6. Click Download for Windows on the Claude page if it has not downloaded yet.
+echo   7. Click through the installer windows that opened: Tracker, GitHub Desktop, Claude Desktop (if the cafe allows it).
 echo.
 echo The browser extensions install only after Chrome asks for your confirmation.
 pause
