@@ -105,7 +105,7 @@ start "" "%ProgramFiles%\LGHUB\lghub.exe"
 :skip_dpi
 
 rem Steam overlay shortcut (default Shift+Tab clashes with in-game keys). Edits every account's localconfig.vdf under the Steam folder.
-rem Steam must be closed to keep the edit, so this closes it (the Steam launch below reopens it). Keeps a .bak next to each file.
+rem Steam must be closed to keep the edit, so this closes it (it is not reopened). Keeps a .bak next to each file.
 set "OVERLAY_MOD=Shift"
 set "OVERLAY_KEY=KEY_F2"
 set "STEAM_DIR="
@@ -116,19 +116,6 @@ echo Setting Steam overlay shortcut to %OVERLAY_MOD%+%OVERLAY_KEY%...
 powershell -NoProfile -Command "$d=$env:STEAM_DIR;$q=[char]34;$t=[char]9;$newline=$t+$t+$q+'InGameOverlayShortcutKey'+$q+$t+$t+$q+$env:OVERLAY_MOD+$t+$env:OVERLAY_KEY+$q;$s=Get-Process steam -ErrorAction SilentlyContinue;if($s){& ($d+'\steam.exe') -shutdown;$s|Wait-Process -Timeout 30 -ErrorAction SilentlyContinue;if(Get-Process steam -ErrorAction SilentlyContinue){exit 1}};foreach($f in Get-ChildItem ($d+'\userdata\*\config\localconfig.vdf')){$b=$f.FullName+'.bak';if(-not(Test-Path $b)){Copy-Item $f.FullName $b};$lines=New-Object Collections.Generic.List[string];$lines.AddRange([string[]][IO.File]::ReadAllLines($f.FullName));$i=-1;for($j=0;$j -lt $lines.Count;$j++){if($lines[$j] -like '*InGameOverlayShortcutKey*'){$i=$j;break}};if($i -ge 0){$lines[$i]=$newline}else{$h=$lines.IndexOf($t+$q+'system'+$q);if($h -lt 0){exit 1};$lines.Insert($h+2,$newline)};[IO.File]::WriteAllLines($f.FullName,$lines)}"
 if errorlevel 1 (echo   Steam overlay patch failed, settings left unchanged.) else (echo   Steam overlay shortcut set.)
 :skip_overlay
-
-rem Optional: launch Marvel Rivals through Steam (app id 2767030). Asked at run time since the PCs are shared; defaults to No after 10 seconds.
-rem Runs last so the graphics settings above are written before the game starts.
-choice /c YN /t 10 /d N /m "Launch Marvel Rivals through Steam now"
-if errorlevel 2 goto :skip_launch
-echo Launching Marvel Rivals through Steam...
-start "" "steam://rungameid/2767030"
-rem Click LAUNCH in the game launcher: waits up to 90s for a window titled "Launcher", then clicks the button
-rem at 83% across and 89% down the window (position taken from a screenshot). Fails quietly if it never appears.
-echo Waiting for the launcher, then pressing LAUNCH...
-powershell -NoProfile -Command "$sig='[StructLayout(LayoutKind.Sequential)] public struct RECT{public int L,T,R,B;} [DllImport(\"user32.dll\")] public static extern bool GetWindowRect(IntPtr h,out RECT r); [DllImport(\"user32.dll\")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport(\"user32.dll\")] public static extern bool SetCursorPos(int x,int y); [DllImport(\"user32.dll\")] public static extern void mouse_event(uint f,uint x,uint y,uint d,UIntPtr e);';Add-Type -Name U -Namespace L -UsingNamespace System.Runtime.InteropServices -MemberDefinition $sig;$w=$null;for($n=0;$n -lt 90;$n++){$w=Get-Process|Where-Object{$_.MainWindowTitle -eq 'Launcher'}|Select-Object -First 1;if($w){break};Start-Sleep 1};if(-not $w){exit 1};Start-Sleep 3;$r=New-Object 'L.U+RECT';[void][L.U]::GetWindowRect($w.MainWindowHandle,[ref]$r);[void][L.U]::SetForegroundWindow($w.MainWindowHandle);Start-Sleep -Milliseconds 500;$x=[int]($r.L+0.83*($r.R-$r.L));$y=[int]($r.T+0.894*($r.B-$r.T));[void][L.U]::SetCursorPos($x,$y);[L.U]::mouse_event(2,0,0,0,[UIntPtr]::Zero);Start-Sleep -Milliseconds 100;[L.U]::mouse_event(4,0,0,0,[UIntPtr]::Zero)"
-if errorlevel 1 (echo   Launcher window not found, press LAUNCH yourself.) else (echo   LAUNCH pressed.)
-:skip_launch
 
 rem Open each installer once its download has finished (waits up to 120s in total for the files to stop growing).
 rem The Claude installer only downloads after you click Download for Windows on the Claude page.
