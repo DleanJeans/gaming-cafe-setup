@@ -9,6 +9,10 @@ set "UBLOCK_ORIGIN_LITE=https://chromewebstore.google.com/detail/ublock-origin-l
 rem Official Tracker.gg Windows download.
 set "MARVEL_RIVALS_TRACKER=https://download.overwolf.com/install/Download?ExtensionId=cbalplcokeaonnkeckofomheibnkijnbloilkjhh&partnerId=4504&utm_campaign=none"
 
+rem Official GitHub Desktop Windows download (starts the installer download) and Claude Desktop download page.
+set "GITHUB_DESKTOP=https://central.github.com/deployments/desktop/desktop/latest/win32"
+set "CLAUDE_DESKTOP=https://claude.com/download"
+
 rem Marvel Rivals player stats.
 set "RIVALS_DATA=https://rivalsdata.com/player/520435205"
 
@@ -35,6 +39,10 @@ start "" "%RIVALS_STATS%"
 start "" "%RIVALS_META%"
 start "" "%PENI_MAPS%"
 :pages_done
+
+echo Starting the GitHub Desktop download and opening the Claude Desktop download page...
+start "" "%GITHUB_DESKTOP%"
+start "" "%CLAUDE_DESKTOP%"
 
 echo Starting the official Marvel Rivals Tracker download...
 rem Remove an older copy first so the wait below can only see the new download.
@@ -129,7 +137,8 @@ echo   2. Click "Add to Chrome" on the uBlock Origin Lite tab.
 echo   3. Check your Marvel Rivals stats on the RivalsData tab.
 echo   4. Check the maps on the Peni tab.
 echo   5. Check the RivalsData stats and RivalsMeta characters tabs.
-echo   6. Click through the Tracker installer window that opened (if the cafe allows it).
+echo   6. Run the GitHub Desktop installer from Downloads, and click Download for Windows on the Claude page.
+echo   7. Click through the Tracker installer window that opened (if the cafe allows it).
 echo.
 echo The browser extensions install only after Chrome asks for your confirmation.
 pause
