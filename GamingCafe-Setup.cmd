@@ -2,6 +2,13 @@
 setlocal
 title Gaming Cafe Setup
 
+rem Steam overlay shortcut (default Shift+Tab clashes with in-game keys). Edits every account's localconfig.vdf under the Steam folder.
+rem Steam must be closed to keep the edit, so this closes it (it is not reopened). Keeps a .bak next to each file.
+set "OVERLAY_MOD=Shift"
+set "OVERLAY_KEY=KEY_F2"
+set "STEAM_DIR="
+for /f "tokens=2,*" %%a in ('reg query "HKCU\Software\Valve\Steam" /v SteamPath 2^>nul') do set "STEAM_DIR=%%b"
+if not defined STEAM_DIR goto :skip_overlay
 rem Official Chrome Web Store listings.
 set "DARK_READER=https://chromewebstore.google.com/detail/dark-reader/eimadpbcbfnmbkopoojfekhnkhdbieeh?hl=en"
 set "UBLOCK_ORIGIN_LITE=https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh?hl=en"
@@ -109,13 +116,6 @@ timeout /t 3 /nobreak >nul
 start "" "%ProgramFiles%\LGHUB\lghub.exe"
 :skip_dpi
 
-rem Steam overlay shortcut (default Shift+Tab clashes with in-game keys). Edits every account's localconfig.vdf under the Steam folder.
-rem Steam must be closed to keep the edit, so this closes it (it is not reopened). Keeps a .bak next to each file.
-set "OVERLAY_MOD=Shift"
-set "OVERLAY_KEY=KEY_F2"
-set "STEAM_DIR="
-for /f "tokens=2,*" %%a in ('reg query "HKCU\Software\Valve\Steam" /v SteamPath 2^>nul') do set "STEAM_DIR=%%b"
-if not defined STEAM_DIR goto :skip_overlay
 set "STEAM_DIR=%STEAM_DIR:/=\%"
 echo Setting Steam overlay shortcut to %OVERLAY_MOD%+%OVERLAY_KEY%...
 powershell -NoProfile -Command "$d=$env:STEAM_DIR;$q=[char]34;$t=[char]9;$newline=$t+$t+$q+'InGameOverlayShortcutKey'+$q+$t+$t+$q+$env:OVERLAY_MOD+$t+$env:OVERLAY_KEY+$q;$s=Get-Process steam -ErrorAction SilentlyContinue;if($s){& ($d+'\steam.exe') -shutdown;$s|Wait-Process -Timeout 30 -ErrorAction SilentlyContinue;if(Get-Process steam -ErrorAction SilentlyContinue){exit 1}};foreach($f in Get-ChildItem ($d+'\userdata\*\config\localconfig.vdf')){$b=$f.FullName+'.bak';if(-not(Test-Path $b)){Copy-Item $f.FullName $b};$lines=New-Object Collections.Generic.List[string];$lines.AddRange([string[]][IO.File]::ReadAllLines($f.FullName));$i=-1;for($j=0;$j -lt $lines.Count;$j++){if($lines[$j] -like '*InGameOverlayShortcutKey*'){$i=$j;break}};if($i -ge 0){$lines[$i]=$newline}else{$h=$lines.IndexOf($t+$q+'system'+$q);if($h -lt 0){exit 1};$lines.Insert($h+2,$newline)};[IO.File]::WriteAllLines($f.FullName,$lines)}"
