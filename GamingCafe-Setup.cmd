@@ -9,6 +9,12 @@ set "OVERLAY_KEY=KEY_F2"
 set "STEAM_DIR="
 for /f "tokens=2,*" %%a in ('reg query "HKCU\Software\Valve\Steam" /v SteamPath 2^>nul') do set "STEAM_DIR=%%b"
 if not defined STEAM_DIR goto :skip_overlay
+set "STEAM_DIR=%STEAM_DIR:/=\%"
+echo Setting Steam overlay shortcut to %OVERLAY_MOD%+%OVERLAY_KEY%...
+powershell -NoProfile -Command "$d=$env:STEAM_DIR;$q=[char]34;$t=[char]9;$newline=$t+$t+$q+'InGameOverlayShortcutKey'+$q+$t+$t+$q+$env:OVERLAY_MOD+$t+$env:OVERLAY_KEY+$q;$s=Get-Process steam -ErrorAction SilentlyContinue;if($s){& ($d+'\steam.exe') -shutdown;$s|Wait-Process -Timeout 30 -ErrorAction SilentlyContinue;if(Get-Process steam -ErrorAction SilentlyContinue){exit 1}};foreach($f in Get-ChildItem ($d+'\userdata\*\config\localconfig.vdf')){$b=$f.FullName+'.bak';if(-not(Test-Path $b)){Copy-Item $f.FullName $b};$lines=New-Object Collections.Generic.List[string];$lines.AddRange([string[]][IO.File]::ReadAllLines($f.FullName));$i=-1;for($j=0;$j -lt $lines.Count;$j++){if($lines[$j] -like '*InGameOverlayShortcutKey*'){$i=$j;break}};if($i -ge 0){$lines[$i]=$newline}else{$h=$lines.IndexOf($t+$q+'system'+$q);if($h -lt 0){exit 1};$lines.Insert($h+2,$newline)};[IO.File]::WriteAllLines($f.FullName,$lines)}"
+if errorlevel 1 (echo   Steam overlay patch failed, settings left unchanged.) else (echo   Steam overlay shortcut set.)
+:skip_overlay
+
 rem Official Chrome Web Store listings.
 set "DARK_READER=https://chromewebstore.google.com/detail/dark-reader/eimadpbcbfnmbkopoojfekhnkhdbieeh?hl=en"
 set "UBLOCK_ORIGIN_LITE=https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh?hl=en"
@@ -115,12 +121,6 @@ start "" "%ProgramFiles%\LGHUB\lghub_agent.exe"
 timeout /t 3 /nobreak >nul
 start "" "%ProgramFiles%\LGHUB\lghub.exe"
 :skip_dpi
-
-set "STEAM_DIR=%STEAM_DIR:/=\%"
-echo Setting Steam overlay shortcut to %OVERLAY_MOD%+%OVERLAY_KEY%...
-powershell -NoProfile -Command "$d=$env:STEAM_DIR;$q=[char]34;$t=[char]9;$newline=$t+$t+$q+'InGameOverlayShortcutKey'+$q+$t+$t+$q+$env:OVERLAY_MOD+$t+$env:OVERLAY_KEY+$q;$s=Get-Process steam -ErrorAction SilentlyContinue;if($s){& ($d+'\steam.exe') -shutdown;$s|Wait-Process -Timeout 30 -ErrorAction SilentlyContinue;if(Get-Process steam -ErrorAction SilentlyContinue){exit 1}};foreach($f in Get-ChildItem ($d+'\userdata\*\config\localconfig.vdf')){$b=$f.FullName+'.bak';if(-not(Test-Path $b)){Copy-Item $f.FullName $b};$lines=New-Object Collections.Generic.List[string];$lines.AddRange([string[]][IO.File]::ReadAllLines($f.FullName));$i=-1;for($j=0;$j -lt $lines.Count;$j++){if($lines[$j] -like '*InGameOverlayShortcutKey*'){$i=$j;break}};if($i -ge 0){$lines[$i]=$newline}else{$h=$lines.IndexOf($t+$q+'system'+$q);if($h -lt 0){exit 1};$lines.Insert($h+2,$newline)};[IO.File]::WriteAllLines($f.FullName,$lines)}"
-if errorlevel 1 (echo   Steam overlay patch failed, settings left unchanged.) else (echo   Steam overlay shortcut set.)
-:skip_overlay
 
 rem Open each installer once its download has finished (waits up to 120s in total for the files to stop growing).
 rem The Claude installer only downloads after you click Download for Windows on the Claude page.
